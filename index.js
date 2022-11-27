@@ -4,10 +4,16 @@ const user = new VK({
     token: "vk1.a.FpGfSoyuDQkSy75HlV3s6OX_NUG75fV1UFSeZOl23_rgt6yLzqr2O74GW6CxU_fuIaEL9IZ6WYsE6wnrdics7BoKWYZWZY8WKWxu1t99Z9WG-EjOcTP4bFGIrXt_hyqNFUnQ0wuDQcKpN8xxJlLCV-WDkoD1PG3Hls_UsscRgIfYBgZe2me5gx70G4GeQC4WGCDP8yv8Y4bmtlEQbgyCOA"
 })
 
-async function getBannedList(){
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
+async function getBannedList() {
     let bannedIds = []
-    let bannedList = await user.api.account.getBanned({})
-    for (let index in bannedList.items){
+    let bannedList = await user.api.account.getBanned({count:200})
+    for (let index in bannedList.items) {
         bannedIds.push(bannedList.items[index])
     }
     return bannedIds
@@ -19,24 +25,41 @@ async function getChatUsers(chatId) {
     })
 }
 
-async function run() {
-    const response = await getChatUsers()
-    console.log(response)
-
+async function getChatUsersId(charId) {
+    let userIds = []
+    const response = await getChatUsers(2000000035)
     for (let userInfoIndex in response.profiles) {
-        console.log(response.profiles[userInfoIndex].id)
-        getBannedList().find(res => ress != response.profiles[userInfoIndex].id)
-        let banResult = user.api.account.ban({owner_id: response.profiles[userInfoIndex].id}).then((res) => {
-            if (res) {
-                console.log(`user ${response.profiles[userInfoIndex].first_name} ${response.profiles[userInfoIndex].last_name} banned`)
-            } else {
-                console.log(`user ${response.profiles[userInfoIndex].first_name} ${response.profiles[userInfoIndex].last_name} banned error ${res}`)
-            }
-        }).catch((err)=>{
-            console.log(err)
-        })
-
+        userIds.push(response.profiles[userInfoIndex].id)
     }
+
+    return userIds
 }
 
+async function ban(id) {
+    return user.api.account.ban({owner_id: id})
+}
+
+async function run() {
+    const chatUsersId = await getChatUsersId(2000000035)
+    const banList = await getBannedList()
+    console.log(chatUsersId)
+    for (const inde in chatUsersId){
+        const banId = banList.find((iE)=> iE == chatUsersId[inde])
+        if(!banId) {
+            ban(chatUsersId[inde]).then((res) => {
+                if (res) {
+                    console.log(`user ${chatUsersId[inde]} banned`)
+                }
+            }).catch((err) => console.log(err))
+        }
+    }
+
+    return "All user in char banned !"
+}
+
+// if (res) {
+//     console.log(`user ${response.profiles[userInfoIndex].first_name} ${response.profiles[userInfoIndex].last_name} banned`)
+// } else {
+//     console.log(`user ${response.profiles[userInfoIndex].first_name} ${response.profiles[userInfoIndex].last_name} banned error ${res}`)
+// }
 run().catch(console.log);
