@@ -12,7 +12,7 @@ function sleep(ms) {
 
 async function getBannedList() {
     let bannedIds = []
-    let bannedList = await user.api.account.getBanned({count:200})
+    let bannedList = await user.api.account.getBanned({count: 200})
     for (let index in bannedList.items) {
         bannedIds.push(bannedList.items[index])
     }
@@ -42,10 +42,10 @@ async function ban(id) {
 async function run() {
     const chatUsersId = await getChatUsersId(2000000035)
     const banList = await getBannedList()
-    console.log(chatUsersId)
-    for (const inde in chatUsersId){
-        const banId = banList.find((iE)=> iE == chatUsersId[inde])
-        if(!banId) {
+
+    for (const inde in chatUsersId) {
+        const banId = banList.find((iE) => iE == chatUsersId[inde])
+        if (!banId) {
             ban(chatUsersId[inde]).then((res) => {
                 if (res) {
                     console.log(`user ${chatUsersId[inde]} banned`)
